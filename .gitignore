@@ -1,0 +1,13 @@
+# 默认忽略的文件
+/shelf/
+/workspace.xml
+
+# 基于编辑器的 HTTP 客户端请求
+/httpRequests/
+
+# 数据源本地存储忽略的文件
+/dataSources/
+/dataSources.local.xml
+
+# 忽略匹配的拓展名文件
+*.docx
