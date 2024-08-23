@@ -316,7 +316,8 @@ $$
 设总贷款金额为$M$,贷款金额全部用于投资,此时，有
 
 $$
-\sum_{i=1}^{12} \mathbf{x}^{(\:k\:)} \leq \frac{M}{200}+130, k = 0,...,5
+\sum_{i=1}^{12} x_{i}^{(\:k\:)} \leq \frac{M}{200}+130 \: , \: k = 0, \ldots, 5 \\
+M \leq 200 \times ( 45+ \sum_{i=1}^{2} x_{1}^{(\:5\:)} )
 $$
 
 至于还款,要求等额还款,市面上流行的还款方式为等额本金还款及等额本息还款，但仅有后者可保证每年还款数额固定不变，故确定还款方式为等额本息还款
@@ -339,7 +340,7 @@ $$
 #### 分牧草$\alpha$英亩
 
 $$
-\alpha = \sum_{i=1}^{2} x_{i} \times \frac{2}{3} + \sum_{i=2}^{12} x_{i} \times 1
+\alpha = \sum_{i=1}^{2} x_{i}^{(k)} \times \frac{2}{3} + \sum_{i=2}^{12} x_{i}^{(k)} \times 1
 $$
 
 #### 分粮食$\beta$英亩
@@ -349,7 +350,7 @@ $$
 
 q_{\beta} = 1.1 \times \beta_{1} + 0.9 \times \beta_{2} + 0.8 \times \beta_{3} + 0.6 \times \beta_{4}\\
 
-l_{\beta} = q_{\beta} - 0.6 \times \sum_{i=2}^{12} x_{i} \\
+l_{\beta} = q_{\beta} - 0.6 \times \sum_{i=2}^{12} x_{i}^{(\:k\:)} \\
 
 if \quad l_{\beta} \gt 0 \: , \: then \quad w_{\beta} = l_{\beta} \times 75 \\
 if \quad l_{\beta} \lt 0 \: , \: then \quad w_{\beta} = l_{\beta} \times 90 \\
@@ -364,7 +365,7 @@ $$
 
 $$
 q_{\gamma}  = 1.5 \times \gamma\\
-l_{\gamma} = q_{\gamma} - 0.7 \times \sum_{i=2}^{12} x_{i} \\
+l_{\gamma} = q_{\gamma} - 0.7 \times \sum_{i=2}^{12} x_{i}^{(\:k\:)} \\
 if \quad l_{\gamma} > 0\: , \: then \quad w_{\gamma} = l_{\gamma} \times 58 \\ 
 if \quad l_{\gamma} < 0\: , \: then \quad w_{\gamma} = l_{\gamma} \times 70 \\
 $$
@@ -378,8 +379,8 @@ $$
 ### 时间
 
 $$
-t_{小母牛} = \sum_{i=1}^{2} x_{i}^{k} \times 10 \\
-t_{大母牛} = \sum_{i=3}^{12} x_{i}^{k} \times 42 \\
+t_{小母牛} = \sum_{i=1}^{2} x_{i}^{(k)} \times 10 \\
+t_{大母牛} = \sum_{i=3}^{12} x_{i}^{(k)} \times 42 \\
 t_{\beta} = \alpha \times 4 \\
 t_{\gamma} = \beta \times 14 \\
 t = t_{小母牛} + t_{大母牛} + t_{\beta} + t_{\gamma} \\
@@ -419,13 +420,9 @@ $$
 ## 限制条件
 
 $$
-M <= 200 \times ( 45+ \sum_{i=1}^{2} x_{1}^{5} )
+\sum_{i=3}^{12} x_{i}^{(\:5\:)} >=50
 $$
 
 $$
-\sum_{i=3}^{12} x_{i}^{5} >=50
-$$
-
-$$
-\sum_{i=3}^{12} x_{i}^{5} <=170
+\sum_{i=3}^{12} x_{i}^{(\:5\:)} <= 175
 $$
