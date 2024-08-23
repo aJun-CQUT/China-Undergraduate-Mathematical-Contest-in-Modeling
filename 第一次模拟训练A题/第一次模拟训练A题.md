@@ -222,7 +222,7 @@ $$
 其中
 
 $$
-y_{1} = 
+\mathbf{y}_{1} = 
 \begin{bmatrix}
 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0
 \end{bmatrix}
@@ -243,7 +243,7 @@ $$
 其中
 
 $$
-y_{1} \times r = 
+\mathbf{y}_{1} \times r = 
 \begin{bmatrix}
 r & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0
 \end{bmatrix}
@@ -265,7 +265,7 @@ $$
 其中
 
 $$
-y_{12} = 
+\mathbf{y}_{12} = 
 \begin{bmatrix}
 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1
 \end{bmatrix}
@@ -286,7 +286,7 @@ $$
 其中
 
 $$
-y_{3,12} \times r = 
+\mathbf{y}_{3,12} \times r = 
 \begin{bmatrix}
 0 & 0 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1
 \end{bmatrix}
