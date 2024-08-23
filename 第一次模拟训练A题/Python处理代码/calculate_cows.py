@@ -1,5 +1,5 @@
 # =============================================================================
-# 计算 w 相关逻辑
+# 牛牛：出售 奶牛或牛奶 相关逻辑
 # =============================================================================
 # %% 导入库
 import numpy as np
@@ -48,8 +48,8 @@ y_3_12[2:] = 1
 # 模拟的年数
 years = 5
 
-population = x0.copy()      # 复制初始雌性种群
-populations = []            # 记录每年的种群数量
+population = x0.copy()                # 复制初始雌性种群
+populations = []                      # 记录每年的种群数量
 populations.append(population.copy()) # 0 年的先写入populations中
 
 num_xiaogongniu_sales = []  # 每年出售小公牛的数量列表
@@ -70,45 +70,12 @@ for year in range(years):
     num_damuniu_sales.append(L_r @ population @ y_3_12)
     num_laomuniu_sales.append(L_r @ population @ y_12)
     
-    # %% 牧草需求
-    alpha = (2/3) * (population[0] + population[1]) + 1 * population[2:12].sum()
-    
-    # %% 粮食需求
-    beta1 = 20 
-    beta2 = 30
-    beta3 = 30
-    beta4 = 10
-    beta = beta1 + beta2 + beta3 + beta4
-    
-    q_beta = 1.1 * beta1 + 0.9 * beta2 + 0.8 * beta3 + 0.6 * beta4
-    
-    l_beta = q_beta - 0.6 * population[1:12].sum()
-    
-    if l_beta > 0:
-        w_beta = l_beta * 75
-    else:
-        w_beta = l_beta * 90
-
-    # %% 甜菜需求 
-    gamma = 10
-    
-    q_gamma = 1.5 * gamma
-    
-    l_gamma = q_gamma - 0.7 * population[1:12].sum()
-    
-    if l_gamma > 0:
-        w_gamma = l_gamma * 58
-    else:
-        w_gamma = l_gamma * 70
-
-    # %% 土地限制
-    total_land = alpha + beta + gamma
-    total_land_limit = 200
-    
-    # %% 迭代逻辑
+    # %% 种群迭代
     population = L_r @ population
     populations.append(population)
-
+    
+# %% 格式化变量
+# 转换列表为数组
 populations = np.array(populations)
 num_xiaogongniu_sales = np.array(num_xiaogongniu_sales)
 num_xiaomuniu_sales = np.array(num_xiaomuniu_sales)
@@ -121,4 +88,4 @@ w_xiaomuniu = 40 * num_laomuniu_sales
 w_damuniu = 370 * num_damuniu_sales
 w_laomuniu = 120 * num_laomuniu_sales
 
-w_nian = w_xiaogongniu + w_xiaomuniu + w_damuniu + w_laomuniu + w_beta + w_gamma
+w_nian = w_xiaogongniu + w_xiaomuniu + w_damuniu + w_laomuniu

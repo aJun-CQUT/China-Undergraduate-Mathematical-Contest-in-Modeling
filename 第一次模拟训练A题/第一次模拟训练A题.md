@@ -340,32 +340,30 @@ $$
 #### 分牧草$\alpha$英亩
 
 $$
-\alpha = \sum_{i=1}^{2} x_{i}^{(k)} \times \frac{2}{3} + \sum_{i=2}^{12} x_{i}^{(k)} \times 1
+\alpha \geq \frac{2}{3} \times \sum_{i=1}^{2} x_{i}^{(k)} + 1 \times \sum_{i=3}^{12} x_{i}^{(k)} \\
 $$
 
 #### 分粮食$\beta$英亩
 
 $$
 \beta = \beta_{1} + \beta_{2} + \beta_{3} + \beta_{4}\\
-
 q_{\beta} = 1.1 \times \beta_{1} + 0.9 \times \beta_{2} + 0.8 \times \beta_{3} + 0.6 \times \beta_{4}\\
 
 l_{\beta} = q_{\beta} - 0.6 \times \sum_{i=2}^{12} x_{i}^{(\:k\:)} \\
-
 if \quad l_{\beta} \gt 0 \: , \: then \quad w_{\beta} = l_{\beta} \times 75 \\
 if \quad l_{\beta} \lt 0 \: , \: then \quad w_{\beta} = l_{\beta} \times 90 \\
 
-\beta_{1} \leq 20\\
-\beta_{2} \leq 30\\
-\beta_{3} \leq 30\\
-\beta_{4} \leq 10
+\beta_{1} \leq 20 \: , \\
+\beta_{2} \leq 30 \: , \\
+\beta_{3} \leq 30 \: , \\
+\beta_{4} \leq 10 \: . \\
 $$
 
-#### 分甜菜$\gamma$英亩
+### 分甜菜$\gamma$英亩
 
 $$
 q_{\gamma}  = 1.5 \times \gamma\\
-l_{\gamma} = q_{\gamma} - 0.7 \times \sum_{i=2}^{12} x_{i}^{(\:k\:)} \\
+l_{\gamma} = q_{\gamma} - 0.7 \times \sum_{i=3}^{12} x_{i}^{(\:k\:)} \\
 if \quad l_{\gamma} > 0\: , \: then \quad w_{\gamma} = l_{\gamma} \times 58 \\ 
 if \quad l_{\gamma} < 0\: , \: then \quad w_{\gamma} = l_{\gamma} \times 70 \\
 $$
@@ -379,8 +377,8 @@ $$
 ### 时间
 
 $$
-t_{小母牛} = \sum_{i=1}^{2} x_{i}^{(k)} \times 10 \\
-t_{大母牛} = \sum_{i=3}^{12} x_{i}^{(k)} \times 42 \\
+t_{小母牛} = \sum_{i=1}^{2} x_{i}^{(k)} \times 10 \: , \: k = 0,1,2,3,4. \\
+t_{大母牛} = \sum_{i=3}^{12} x_{i}^{(k)} \times 42 \: , \: k = 0,1,2,3,4. \\
 t_{\beta} = \alpha \times 4 \\
 t_{\gamma} = \beta \times 14 \\
 t = t_{小母牛} + t_{大母牛} + t_{\beta} + t_{\gamma} \\
@@ -391,8 +389,8 @@ $$
 ### 资金
 
 $$
-c_{小母牛} = 500 \times \sum_{i=1}^{2} x_{i}^{(k)} \\
-c_{大母牛} = 100 \times \sum_{i=3}^{12} x_{i}^{(k)} \\
+c_{小母牛} = 500 \times \sum_{i=1}^{2} x_{i}^{(k)} \: , \: k = 0,1,2,3,4.\\
+c_{大母牛} = 100 \times \sum_{i=3}^{12} x_{i}^{(k)} \: , \: k = 0,1,2,3,4.\\
 c_{\beta} = \beta \times 15\\
 c_{\gamma} = \gamma \times 10
 $$
@@ -408,7 +406,7 @@ $$
 年毛利（收入）：
 
 $$
-w_{年} = w^{(k)}_{小公牛} + w^{(k)}_{小母牛} + w^{(k)}_{大母牛} + w^{(k)}_{老母牛} + w_{\gamma} +  w_{\beta}
+w_{年} = w^{(k)}_{小公牛} + w^{(k)}_{小母牛} + w^{(k)}_{大母牛} + w^{(k)}_{老母牛} + w_{\beta} + w_{\gamma}
 $$
 
 年利润（优化目标）：
