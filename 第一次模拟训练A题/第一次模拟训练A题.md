@@ -76,15 +76,19 @@ x_1^{(\:k\:)}=a_1x_1^{(\:k-1\:)}+a_2x_2^{(\:k-1\:)}+\cdots+a_nx_n^{(\:k-1\:)}\:,
 $$
 
 当$t_{k}$时刻出售$r$比例的刚出生的小母牛，即出售小母牛的数量为 $(a_1x_1^{(k-1)} + a_2x_2^{(k-1)} + \cdots + a_nx_n^{(k-1)}) \times r，(k \neq 0)$ , 由此更新第一个年龄段种群雌性数量的迭代公式如下
+
 $$
 x_1^{(k)} = ( a_1x_1^{(k-1)} + a_2x_2^{(k-1)} + \cdots + a_nx_n^{(k-1)} ) \times (1 - r) \\
 $$
 
 $t_{k}$时刻第$i+1$个年龄组中雌性奶牛的数量等于$t_{k-1}$时刻第$i$个年龄组中存活下来的雌性奶牛的数量，
+
 $$
 x_{i+1}^{(k)}=b_{i}x_{i}^{(k-1)}\:,\quad i=1\:,2\:,\cdots,n-1\
 $$
+
 遍历上述$n-1$个存活条件，并在最初添加种群数量的繁殖条件公式，有
+
 $$
 \begin{cases}
 x_1^{(k)} = ( a_1x_1^{(k-1)} + a_2x_2^{(k-1)} + \cdots + a_nx_n^{(k-1)} ) \times (1 - r) \:, \\
@@ -109,6 +113,7 @@ a_{1} \times (1-r) & a_{2} \times (1-r) & \cdots & a_{n-1} \times (1-r) & a_{n} 
 $$
 
 即，
+
 $$
 \mathbf{L}=(1-r) \times 
 \begin{bmatrix}
@@ -119,7 +124,9 @@ a_1 & a_2 & \cdots & a_{n-1} & a_n
 0 & 0 & \cdots & b_{n-1} & 0
 \end{bmatrix}
 $$
+
 则$t_{k}$时刻种群数量分布向量递推公式为
+
 $$
 \mathbf{x^{(k)}} = \mathbf{L} x^{(k-1)} ,\quad k=1 ,2 ,\cdots
 $$
@@ -183,6 +190,7 @@ $$
 $$
 
 考虑第一个年龄段的雌性出售比率为$r$ , 种群数量分布莱斯利雌矩阵应更新为
+
 $$
 \mathbf{L} = 
 (1-r) \times
@@ -243,6 +251,7 @@ $$
 
 目的为从前面所得的种群数量分布向量（$x^{(k-1)} \times L$）中取出第一个元素，即小母牛的数量, $r$为出售小母牛的比例
 则 $ x^{(k-1)} \times L \times y_{1} \times r$ 即为待出售小母牛的数量
+
 $$
 \sum_{k=1}^{5} w^{(k)}_{小母牛} = 40 \sum_{k=1}^{5} (\mathbf{x}^{(k-1)} \mathbf{L'} \mathbf{y}_{1} r)
 $$
@@ -273,7 +282,9 @@ $$
 $$
 w^{(k)}_{大母牛} = \mathbf{x}^{(k-1)} \mathbf{L} \mathbf{y}_{3,12} \times 370
 $$
+
 其中
+
 $$
 y_{3,12} \times r = 
 \begin{bmatrix}
@@ -297,6 +308,7 @@ $$
 
 至于还款,要求等额还款,市面上流行的还款方式为等额本金还款及等额本息还款，但仅有后者可保证每年还款数额固定不变，故确定还款方式为等额本息还款
 有，
+
 $$
 \text{每年应还额度} = \frac{贷款本金 \times 年利率 \times (1 + 年利率)^{还款年数}}{(1 + 年利率)^{还款年数} - 1}
 $$
@@ -324,10 +336,11 @@ $$
 \beta = \beta_{1} + \beta_{2} + \beta_{3} + \beta_{4}\\
 
 q_{\beta} = 1.1 \times \beta_{1} + 0.9 \times \beta_{2} + 0.8 \times \beta_{3} + 0.6 \times \beta_{4}\\
-if \quad q_{\beta} \geq 0.6 \times \sum_{i=2}^{12} x_{i}\\
-then \quad (q_{\beta} - 0.6 \times \sum_{i=2}^{12} x_{i}) \times 75 \\
-if \quad q_{\beta} \leq 0.6 \times \sum_{i=2}^{12} x_{i}\\
-then \quad (0.6 \times \sum_{i=2}^{12} x_{i} -\text{q}_{粮食}) \times 90 \\
+
+l_{\beta} = q_{\beta} - 0.6 \times \sum_{i=2}^{12} x_{i} \\
+
+if \quad l_{\beta} \gt 0 \: , \: then \quad w_{\beta} = l_{\beta} \times 75 \\
+if \quad l_{\beta} \lt 0 \: , \: then \quad w_{\beta} = l_{\beta} \times 90 \\
 
 \beta_{1} \leq 20\\
 \beta_{2} \leq 30\\
@@ -339,10 +352,9 @@ $$
 
 $$
 q_{\gamma}  = 1.5 \times \gamma\\
-if \quad q_{\gamma}  \geq 0.7 \times \sum_{i=2}^{12} x_{i}\\
-then \quad (q_{\gamma}  - 0.7 \times \sum_{i=2}^{12} x_{i}) \times 58 \\
-if \quad q_{\gamma}  \leq 0.7 \times \sum_{i=2}^{12} x_{i}\\
-then \quad (0.7 \times \sum_{i=2}^{12} x_{i} - q_{\gamma} ) \times 70 \\
+l_{\gamma} = q_{\gamma} - 0.7 \times \sum_{i=2}^{12} x_{i} \\
+if \quad l_{\gamma} > 0\: , \: then \quad w_{\gamma} = l_{\gamma} \times 58 \\ 
+if \quad l_{\gamma} < 0\: , \: then \quad w_{\gamma} = l_{\gamma} \times 70 \\
 $$
 
 #### 对整体
@@ -359,10 +371,8 @@ t_{大母牛} = \sum_{i=3}^{12} x_{i}^{k} \times 42 \\
 t_{\beta} = \alpha \times 4 \\
 t_{\gamma} = \beta \times 14 \\
 t = t_{小母牛} + t_{大母牛} + t_{\beta} + t_{\gamma} \\
-if \quad t \leq 5500 \\
-then\quad c = 4000 \\
-if \quad t \geq 5500 \\
-then \quad c = 4000 + (t-5500) \times 1.2
+if \quad t \leq 5500 \: , \: then \quad c_{工人} = 4000 \\
+\quad \quad \quad \quad \quad \quad \quad \quad if \quad t \geq 5500 \: , \: then \quad c_{工人} = 4000 + (t-5500) \times 1.2
 $$
 
 ### 资金
@@ -372,4 +382,38 @@ c_{小母牛} = 500 \times \sum_{i=1}^{2} x_{i}^{(k)} \\
 c_{大母牛} = 100 \times \sum_{i=3}^{12} x_{i}^{(k)} \\
 c_{\beta} = \beta \times 15\\
 c_{\gamma} = \gamma \times 10
+$$
+
+## 优化目标
+
+年成本（支出）：
+
+$$
+c_{年} = c_{\beta} + c_{\gamma} + c_{小母牛} + c_{大母牛} + c_{工人} + m
+$$
+
+年毛利（收入）：
+
+$$
+w_{年} = w^{(k)}_{小公牛} + w^{(k)}_{小母牛} + w^{(k)}_{大母牛} + w^{(k)}_{老母牛} + w_{\gamma} +  w_{\beta}
+$$
+
+年利润（优化目标）：
+
+$$
+E_{年} = w_{年} - c_{年}
+$$
+
+## 限制条件
+
+$$
+M <= 200 \times ( 45+ \sum_{i=1}^{2} x_{1}^{5} )
+$$
+
+$$
+\sum_{i=3}^{12} x_{i}^{5} >=50
+$$
+
+$$
+\sum_{i=3}^{12} x_{i}^{5} <=170
 $$
