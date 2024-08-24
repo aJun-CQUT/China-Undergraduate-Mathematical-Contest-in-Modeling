@@ -14,3 +14,4 @@
 *.docx
 # 忽略以 temp 开头的文件
 temp*
+/第一次模拟训练A题/Python处理代码/__pycache__
