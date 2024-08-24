@@ -1,14 +1,15 @@
 import numpy as np
+from scipy.optimize import minimize, Bounds
 
-# 定义类:牛群
+
 class Cattle:
-    def __init__(self, x0, birth_rates, survival_rates, alphas, betas, gamma, r, M, years=5):
+    def __init__(self, x0, birth_rates, survival_rates, alpha, betas, gamma, r, M, years=5):
         # Leslie 矩阵
         self.x0 = np.array(x0)                         # 初始种群数量分布向量
         self.xs = [self.x0.copy()]                     # 种群数量分布向量列表
         self.birth_rates = np.array(birth_rates)       # 出生率
         self.survival_rates = np.array(survival_rates) # 存活率
-        self.alphas = alphas                           # alpha参数
+        self.alpha = alpha                             # alpha参数
         self.betas = np.array(betas)                   # beta参数
         self.gamma = gamma                             # gamma参数
         self.r = r                                     # r参数
@@ -34,47 +35,47 @@ class Cattle:
 
     def reset_metrics(self):
         # 初始化指标
-        self.alphas_metrics = np.array([0])                # alpha指标
-        self.betas_metrics = np.array([[0, 0, 0, 0]])      # beta指标
-        self.gammas = np.array([0])                        # gamma指标
-        self.q_betas = np.array([0])                       # q_beta指标
-        self.q_gammas = np.array([0])                      # q_gamma指标
-        self.l_betas = np.array([0])                       # l_beta指标
-        self.l_gammas = np.array([0])                      # l_gamma指标
-        self.w_betas = np.array([0])                       # w_beta指标
-        self.w_gammas = np.array([0])                      # w_gamma指标
-        self.c_xiaomunius = np.array([0])                  # 小母牛成本
-        self.c_damunius = np.array([0])                    # 大母牛成本
-        self.c_betas = np.array([0])                       # beta成本
-        self.c_gammas = np.array([0])                      # gamma成本
-        self.t_xiaomunius = np.array([0])                  # 小母牛总数
-        self.t_damunius = np.array([0])                    # 大母牛总数
-        self.t_betas = np.array([0])                       # beta总数
-        self.t_gammas = np.array([0])                      # gamma总数
-        self.t_totals = np.array([0])                      # 总数
-        self.c_workers = np.array([0])                     # 工人成本
-        self.num_xiaogongniu_sales = np.array([0])         # 小公牛销售数量
-        self.num_xiaomuniu_sales = np.array([0])           # 小母牛销售数量
-        self.num_damuniu_sales = np.array([0])             # 大母牛销售数量
-        self.num_laomuniu_sales = np.array([0])            # 老母牛销售数量
-        self.w_xiaogongniu = np.array([0])                 # 小公牛收入
-        self.w_xiaomuniu = np.array([0])                   # 小母牛收入
-        self.w_damuniu = np.array([0])                     # 大母牛收入
-        self.w_laomuniu = np.array([0])                    # 老母牛收入
-        self.w_years = np.array([0])                       # 年收入
-        self.c_years = np.array([0])                       # 年成本
-        self.E_years = np.array([0])                       # 年利润
+        self.alpha_metrics = np.array([0])             # alpha指标
+        self.betas_metrics = np.array([[0, 0, 0, 0]])  # beta指标
+        self.gammas = np.array([0])                    # gamma指标
+        self.q_betas = np.array([0])                   # q_beta指标
+        self.q_gammas = np.array([0])                  # q_gamma指标
+        self.l_betas = np.array([0])                   # l_beta指标
+        self.l_gammas = np.array([0])                  # l_gamma指标
+        self.w_betas = np.array([0])                   # w_beta指标
+        self.w_gammas = np.array([0])                  # w_gamma指标
+        self.c_xiaomunius = np.array([0])              # 小母牛成本
+        self.c_damunius = np.array([0])                # 大母牛成本
+        self.c_betas = np.array([0])                   # beta成本
+        self.c_gammas = np.array([0])                  # gamma成本
+        self.t_xiaomunius = np.array([0])              # 小母牛总数
+        self.t_damunius = np.array([0])                # 大母牛总数
+        self.t_betas = np.array([0])                   # beta总数
+        self.t_gammas = np.array([0])                  # gamma总数
+        self.t_totals = np.array([0])                  # 总数
+        self.c_workers = np.array([0])                 # 工人成本
+        self.num_xiaogongniu_sales = np.array([0])     # 小公牛销售数量
+        self.num_xiaomuniu_sales = np.array([0])       # 小母牛销售数量
+        self.num_damuniu_sales = np.array([0])         # 大母牛销售数量
+        self.num_laomuniu_sales = np.array([0])        # 老母牛销售数量
+        self.w_xiaogongniu = np.array([0])             # 小公牛收入
+        self.w_xiaomuniu = np.array([0])               # 小母牛收入
+        self.w_damuniu = np.array([0])                 # 大母牛收入
+        self.w_laomuniu = np.array([0])                # 老母牛收入
+        self.w_years = np.array([0])                   # 年收入
+        self.c_years = np.array([0])                   # 年成本
+        self.E_years = np.array([0])                   # 年利润
 
     def simulate(self):
         for year in range(self.years):
-            x = self.xs[-1]                      # 当前年份的种群数量分布
-            self.update_metrics(x)               # 更新指标
-            self.update_population()             # 更新种群数量
-        profit = self.calculate_total_profit()        # 计算总利润
-        return profit, np.array(self.xs)              # 返回总利润和种群数量数组
+            x = self.xs[-1]                            # 当前年份的种群数量分布向量
+            self.update_metrics(x)                     # 更新指标
+            self.update_x()                            # 更新种群数量分布向量
+        profit = self.calculate_total_profit()         # 计算总利润
+        return profit, np.array(self.xs)               # 返回总利润和种群数量分布向量数组
 
     def update_metrics(self, x):
-        alpha = self.alphas
+        alpha = self.alpha
         beta1, beta2, beta3, beta4 = self.betas
         gamma = self.gamma
         
@@ -87,7 +88,7 @@ class Cattle:
         w_gamma = l_gamma * 58 if l_gamma > 0 else l_gamma * 70         # w_gamma计算
 
         # 更新指标
-        self.alphas_metrics = np.append(self.alphas_metrics, alpha)
+        self.alpha_metrics = np.append(self.alpha_metrics, alpha)
         self.betas_metrics = np.vstack([self.betas_metrics, [beta1, beta2, beta3, beta4]])
         self.gammas = np.append(self.gammas, gamma)
         self.q_betas = np.append(self.q_betas, q_beta)
@@ -138,38 +139,114 @@ class Cattle:
         E_year = w_year - c_year
         self.E_years = np.append(self.E_years, E_year)
 
-    def update_population(self):
+    def update_x(self):
         x = self.L_r @ self.xs[-1]
-        self.xs.append(np.maximum(np.round(x), 0))  # 取整并确保非负
+        self.xs.append(np.maximum(np.floor(x), 0))  # 取整并确保非负
 
     def calculate_total_profit(self):
         return np.sum(self.E_years)
 
+
 if __name__ == '__main__':
-    # 初始参数
-    alpha = 1.0
-    beta1 = 0.5
-    beta2 = 0.6
-    beta3 = 0.7
-    beta4 = 0.8
-    gamma = 1.2
-    r = 0.3
-    M = 1000
+    # 定义目标函数
+    def objective_function(params):
+        r, M, alpha, beta1, beta2, beta3, beta4, gamma = params
+        cattle = Cattle(
+            x0=np.ones(12) * 10,
+            birth_rates=np.array([0., 0., 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1]),
+            survival_rates=np.array([0.95, 0.95, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98]),
+            alpha=alpha,
+            betas=[beta1, beta2, beta3, beta4],
+            gamma=gamma,
+            r=r,
+            M=M
+        )
+        profit, xs = cattle.simulate()
+        return -profit  # 最优化问题通常最小化目标函数，因此我们取负值来最大化利润
     
-    # 创建 Cattle 实例
-    cattle = Cattle(
-        x0=np.ones(12) * 10,  # 初始种群数量分布向量
-        birth_rates=np.array([0., 0., 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1]),  # 出生率
-        survival_rates=np.array([0.95, 0.95, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98]),  # 存活率
-        alphas=alpha,  # alpha参数
-        betas=[beta1, beta2, beta3, beta4],  # beta参数
-        gamma=gamma,  # gamma参数
-        r=r,          # r参数
-        M=M           # M参数
-    )
+    # 约束条件
+    def constraint1(params):
+        r, M, alpha, beta1, beta2, beta3, beta4, gamma = params
+        cattle = Cattle(
+            x0=np.ones(12) * 10,
+            birth_rates=np.array([0., 0., 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1]),
+            survival_rates=np.array([0.95, 0.95, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98]),
+            alpha=alpha,
+            betas=[beta1, beta2, beta3, beta4],
+            gamma=gamma,
+            r=r,
+            M=M
+        )
+        _, xs = cattle.simulate()
+        return [(M / 200 + 130) - np.sum(x) for x in xs]
     
-    # 运行模拟
-    profit, population = cattle.simulate()
+    def constraint2(params):
+        r, M, alpha, beta1, beta2, beta3, beta4, gamma = params
+        cattle = Cattle(
+            x0=np.ones(12) * 10,
+            birth_rates=np.array([0., 0., 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1]),
+            survival_rates=np.array([0.95, 0.95, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98]),
+            alpha=alpha,
+            betas=[beta1, beta2, beta3, beta4],
+            gamma=gamma,
+            r=r,
+            M=M
+        )
+        _, xs = cattle.simulate()
+        return [alpha - (2 / 3 * np.sum(x[:2]) + np.sum(x[2:])) for x in xs]
     
-    print(f"总利润: {profit}")
-    print(f"种群数量: {population}")
+    def constraint3(params):
+        r, M, alpha, beta1, beta2, beta3, beta4, gamma = params
+        return 200 - np.sum([alpha, beta1, beta2, beta3, beta4, gamma])
+    
+    def constraint4(params):
+        r, M, alpha, beta1, beta2, beta3, beta4, gamma = params
+        cattle = Cattle(
+            x0=np.ones(12) * 10,
+            birth_rates=np.array([0., 0., 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1]),
+            survival_rates=np.array([0.95, 0.95, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98]),
+            alpha=alpha,
+            betas=[beta1, beta2, beta3, beta4],
+            gamma=gamma,
+            r=r,
+            M=M
+        )
+        _, xs = cattle.simulate()
+        return 50 - np.sum(xs[-1][2:])
+    
+    def constraint5(params):
+        r, M, alpha, beta1, beta2, beta3, beta4, gamma = params
+        cattle = Cattle(
+            x0=np.ones(12) * 10,
+            birth_rates=np.array([0., 0., 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1]),
+            survival_rates=np.array([0.95, 0.95, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98]),
+            alpha=alpha,
+            betas=[beta1, beta2, beta3, beta4],
+            gamma=gamma,
+            r=r,
+            M=M
+        )
+        _, xs = cattle.simulate()
+        return np.sum(xs[-1][2:]) - 175
+
+    # 初值猜想
+    initial_guess = [0.5, 500000, 20, 10, 10, 10, 10, 5]
+    
+    # 参数的边界
+    bounds = Bounds([0, 0, 50, 0, 0, 0, 0, 0], [1, 1000000, 200, 20, 30, 30, 10, 200])
+
+    # 约束条件
+    constraints = [
+        {'type': 'ineq', 'fun': constraint1},
+        {'type': 'ineq', 'fun': constraint2},
+        {'type': 'ineq', 'fun': constraint3},
+        {'type': 'ineq', 'fun': constraint4},
+        {'type': 'ineq', 'fun': constraint5}
+    ]
+
+    # 调用优化函数
+    result = minimize(objective_function, initial_guess, bounds=bounds, constraints=constraints, method='SLSQP')
+
+    # 输出结果
+    print("优化结果:")
+    print(result)
