@@ -219,8 +219,8 @@ class Cattle:
         return np.sum(self.E_years_values)
 
 if __name__ == '__main__':
+    
     def objective_function(params):
-        # 目标函数: 最大化利润
         r, M, alpha, beta1, beta2, beta3, beta4, gamma = params
     
         cattle = Cattle(
@@ -234,20 +234,56 @@ if __name__ == '__main__':
             M=M,
             years=5
         )
+        
+        profit, xs = cattle.simulate()
+        
         penalty = 0
-        
-        # 添加惩罚项以确保参数在合理范围内
-        
-        if cattle.alpha_values - (2/3 * cattle.xs[:, :2] + 1 * cattle.xs[:, 2:]) < 0 : penalty += 10000
-        # if beta1 < 10: penalty += 10000
-        # if beta2 < 10: penalty += 10000
-        # if beta3 < 10: penalty += 10000
-        # if beta4 < 10: penalty += 10000
-        # if gamma < 10: penalty += 10000
-        
-        profit, _ = cattle.simulate()
-        return -profit + penalty
+        xs = np.array(xs)
     
+        for t in range(len(xs)):
+            x = xs[t]
+            
+            # 约束1：牛舍数量大于牛数
+            constraint1 = (M / 200 + 130) - np.sum(x)
+            if not (constraint1 >= 0):
+                penalty += 10000
+    
+            # 约束2：牧草面积下限
+            constraint2 = alpha - (2/3 * np.sum(x[:2]) + np.sum(x[2:]))
+            if not (constraint2 >= 0):
+                penalty += 10000
+    
+            # 约束3：总面积上限
+            constraint3 = 200 - (alpha + beta1 + beta2 + beta3 + beta4 + gamma)
+            if not (constraint3 >= 0):
+                penalty += 10000
+    
+            # 约束4：成年母牛数量下限（仅在最后一年检查）
+            if t == len(xs) - 1:
+                constraint4 = np.sum(x[2:]) - 50
+                if not (constraint4 >= 0):
+                    penalty += 10000
+    
+            # 约束5：成年母牛数量上限（仅在最后一年检查）
+            if t == len(xs) - 1:
+                constraint5 = 175 - np.sum(x[2:])
+                if not (constraint5 >= 0):
+                    penalty += 10000
+    
+            # 约束6：各年龄组牛的数量为非负整数
+            if not (np.all(x >= 0) and np.all(x == np.floor(x))):
+                penalty += 10000
+    
+        # 约束7：各种植面积为非负数
+        if not (alpha >= 0 and beta1 >= 0 and beta2 >= 0 and beta3 >= 0 and beta4 >= 0 and gamma >= 0):
+            penalty += 10000
+    
+        # 约束8：小母牛出售率在0到1之间
+        if not (0 <= r <= 1):
+            penalty += 10000
+    
+        return -profit + penalty
+
     # 定义参数的边界
     bounds = [
         (0, 1),                     # r: 小母牛出售率
