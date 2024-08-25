@@ -161,8 +161,8 @@ class Cattle:
         l_beta = q_beta - 0.6 * np.sum(x[2:12])
         l_gamma = q_gamma - 0.7 * np.sum(x[2:12])
         
-        w_beta = l_beta * 75 if l_beta > 0 else l_beta * 90
-        w_gamma = l_gamma * 58 if l_gamma > 0 else l_gamma * 70
+        w_beta = l_beta * 75 if l_beta > 0 else -l_beta * 90
+        w_gamma = l_gamma * 58 if l_gamma > 0 else -l_gamma * 70
     
         self.alpha_values = np.append(self.alpha_values, alpha)
         self.betas_values = np.vstack([self.betas_values, [beta1, beta2, beta3, beta4]])
@@ -189,24 +189,23 @@ class Cattle:
         self.w_damuniu_values = np.append(self.w_damuniu_values, 370 * num_damuniu_sales)
         self.w_laomuniu_values = np.append(self.w_laomuniu_values, 120 * num_laomuniu_sales)
     
-        self.t_xiaomunius_values = np.append(self.t_xiaomunius_values, x @ self.y_1_2)
-        self.t_damunius_values = np.append(self.t_damunius_values, x @ self.y_3_12)
+        self.t_xiaomunius_values = np.append(self.t_xiaomunius_values, 10 * x @ self.y_1_2)
+        self.t_damunius_values = np.append(self.t_damunius_values, 42 * x @ self.y_3_12)
         self.t_betas_values = np.append(self.t_betas_values, 4 * (beta1 + beta2 + beta3 + beta4))
         self.t_gammas_values = np.append(self.t_gammas_values, 14 * gamma)
-        self.t_totals_values = np.append(self.t_totals_values, x @ self.y_1_2 + x @ self.y_3_12 + 4 * (beta1 + beta2 + beta3 + beta4) + 14 * gamma)
+        self.t_totals_values = np.append(self.t_totals_values, 10 * x @ self.y_1_2 + 42 * x @ self.y_3_12 + 4 * (beta1 + beta2 + beta3 + beta4) + 14 * gamma)
     
         self.c_xiaomunius_values = np.append(self.c_xiaomunius_values, 500 * x @ self.y_1_2)
         self.c_damunius_values = np.append(self.c_damunius_values, 100 * x @ self.y_3_12)
         self.c_betas_values = np.append(self.c_betas_values, 15 * (beta1 + beta2 + beta3 + beta4))
-        self.c_gammas_values = np.append(self.c_gammas_values, 45 * gamma)
-        self.c_workers_values = np.append(self.c_workers_values, 110 * np.sum(x[2:12]))
+        self.c_gammas_values = np.append(self.c_gammas_values, 10 * gamma)
+        self.c_workers_values = np.append(self.c_workers_values, 4000 if self.t_totals_values[-1] <= 5500 else 4000 + 1.2 * (self.t_totals_values[-1] - 5500))
     
         self.w_years_values = np.append(self.w_years_values, np.sum([self.w_xiaogongniu_values[-1], self.w_xiaomuniu_values[-1], self.w_damuniu_values[-1],
-                                                                     self.w_laomuniu_values[-1], w_beta, w_gamma]))
+                                                                     self.w_laomuniu_values[-1], self.w_betas_values[-1], self.w_gammas_values[-1]]))
         
         self.c_years_values = np.append(self.c_years_values, np.sum([self.c_betas_values[-1], self.c_gammas_values[-1], self.c_xiaomunius_values[-1],
-                                                                     self.c_damunius_values[-1], self.c_betas_values[-1], self.c_gammas_values[-1],
-                                                                     self.c_workers_values[-1], self.m]))
+                                                                     self.c_damunius_values[-1], self.c_workers_values[-1], self.m]))
         
         self.E_years_values = np.append(self.E_years_values, self.w_years_values[-1] - self.c_years_values[-1])
 
@@ -238,25 +237,27 @@ if __name__ == '__main__':
         penalty = 0
         
         # 添加惩罚项以确保参数在合理范围内
-        if beta1 < 10: penalty += 10000
-        if beta2 < 10: penalty += 10000
-        if beta3 < 10: penalty += 10000
-        if beta4 < 10: penalty += 10000
-        if gamma < 10: penalty += 10000
+        
+        if cattle.alpha_values - (2/3 * cattle.xs[:, :2] + 1 * cattle.xs[:, 2:]) < 0 : penalty += 10000
+        # if beta1 < 10: penalty += 10000
+        # if beta2 < 10: penalty += 10000
+        # if beta3 < 10: penalty += 10000
+        # if beta4 < 10: penalty += 10000
+        # if gamma < 10: penalty += 10000
         
         profit, _ = cattle.simulate()
         return -profit + penalty
     
     # 定义参数的边界
     bounds = [
-        (0, 1),            # r: 小母牛出售率
-        (0, 1000000),      # M:     贷款投资
-        (2/3*20+100, 200), # alpha: 种植牧草
-        (0, 20),           # beta1: 种植粮食
-        (0, 30),           # beta2: 种植粮食
-        (0, 30),           # beta3: 种植粮食
-        (0, 10),           # beta4: 种植粮食
-        (70/1.5, 200)      # gamma: 种植甜菜
+        (0, 1),                     # r: 小母牛出售率
+        (0, 1000000),               # M:     贷款投资
+        (2/3*20+100, 200),          # alpha: 种植牧草
+        (0, 20),                    # beta1: 种植粮食
+        (0, 30),                    # beta2: 种植粮食
+        (0, 30),                    # beta3: 种植粮食
+        (0, 10),                    # beta4: 种植粮食
+        (0, 200- (2/3*20+100))      # gamma: 种植甜菜
     ]
     
     # 使用差分进化算法寻找最优参数
