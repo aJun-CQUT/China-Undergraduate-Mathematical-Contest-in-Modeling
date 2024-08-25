@@ -101,8 +101,8 @@ class Cattle:
         l_beta = q_beta - 0.6 * np.sum(x[2:12])
         l_gamma = q_gamma - 0.7 * np.sum(x[2:12])
         
-        w_beta = l_beta * 75 if l_beta > 0 else -l_beta * 90
-        w_gamma = l_gamma * 58 if l_gamma > 0 else -l_gamma * 70
+        w_beta = l_beta * 75 if l_beta > 0 else l_beta * 90
+        w_gamma = l_gamma * 58 if l_gamma > 0 else l_gamma * 70
     
         self.alpha_values = np.append(self.alpha_values, alpha)
         self.betas_values = np.vstack([self.betas_values, [beta1, beta2, beta3, beta4]])
@@ -222,46 +222,108 @@ if __name__ == '__main__':
             
             # 约束1：牛舍数量大于牛数
             constraint1 = (M / 200 + 130) - np.sum(x)
-            if not (constraint1 >= 0):
-                penalty += 10000
+            if constraint1 < 0:
+                penalty += abs(constraint1) * 1000
     
             # 约束2：牧草面积下限
             constraint2 = alpha - (2/3 * np.sum(x[:2]) + np.sum(x[2:]))
-            if not (constraint2 >= 0):
-                penalty += 10000
+            if constraint2 < 0:
+                penalty += abs(constraint2) * 1000
     
             # 约束3：土地面积上限
             constraint3 = 200 - (alpha + beta1 + beta2 + beta3 + beta4 + gamma)
-            if not (constraint3 >= 0):
-                penalty += 10000
+            if constraint3 < 0:
+                penalty += abs(constraint3) * 1000
     
             # 约束4：成年母牛数量下限（仅在最后一年检查）
             if t == len(xs) - 1:
                 constraint4 = np.sum(x[2:]) - 50
-                if not (constraint4 >= 0):
-                    penalty += 10000
+                if constraint4 < 0:
+                    penalty += abs(constraint4) * 2000  # 增加约束4的惩罚权重
     
             # 约束5：成年母牛数量上限（仅在最后一年检查）
             if t == len(xs) - 1:
                 constraint5 = 175 - np.sum(x[2:])
-                if not (constraint5 >= 0):
-                    penalty += 10000
+                if constraint5 < 0:
+                    penalty += abs(constraint5) * 1000
     
             # 约束6：各年龄组牛的数量为非负整数
             if not (np.all(x >= 0) and np.all(x == np.floor(x))):
-                penalty += 10000
+                penalty += 1000
     
         # 约束7：各种植面积为非负数
         if not (alpha >= 0 and beta1 >= 0 and beta2 >= 0 and beta3 >= 0 and beta4 >= 0 and gamma >= 0):
-            penalty += 10000
+            penalty += 1000
     
         # 约束8：小母牛出售率在0到1之间
         if not (0 <= r <= 1):
-            penalty += 10000
+            penalty += 1000
     
         return -profit + penalty
+    
+    def validate_results(cattle, optimal_params):
+        r, M, alpha, beta1, beta2, beta3, beta4, gamma = optimal_params
+        final_profit, xs_final = cattle.validate()
+        
+        print(f"\n年度利润:\n{cattle.E_years_values}")
+        print(f"\nAlpha 值:\n{cattle.alpha_values}")
+        print(f"\nBeta 值:\n{cattle.betas_values}")
+        print(f"\nGamma 值:\n{cattle.gamma_values}")
+        print(f"\n使用最优参数的最终利润:\n{final_profit}")
+    
+        penalty_check = 0
+        constraint_violations = {i: 0 for i in range(1, 9)}
+    
+        for t in range(len(xs_final)):
+            x = xs_final[t]
+    
+            if not ((M / 200 + 130) - np.sum(x) >= 0):
+                penalty_check += 10000
+                constraint_violations[1] += 1
+    
+            if not (alpha - (2/3 * np.sum(x[:2]) + np.sum(x[2:])) >= 0):
+                penalty_check += 10000
+                constraint_violations[2] += 1
+    
+            if not (200 - (alpha + beta1 + beta2 + beta3 + beta4 + gamma) >= 0):
+                penalty_check += 10000
+                constraint_violations[3] += 1
+    
+            if t == len(xs_final) - 1:
+                if not (np.sum(x[2:]) - 50 >= 0):
+                    penalty_check += 10000
+                    constraint_violations[4] += 1
+    
+            if t == len(xs_final) - 1:
+                if not (175 - np.sum(x[2:]) >= 0):
+                    penalty_check += 10000
+                    constraint_violations[5] += 1
+    
+            if not (np.all(x >= 0) and np.all(x == np.floor(x))):
+                penalty_check += 10000
+                constraint_violations[6] += 1
+    
+        if not (alpha >= 0 and beta1 >= 0 and beta2 >= 0 and beta3 >= 0 and beta4 >= 0 and gamma >= 0):
+            penalty_check += 10000
+            constraint_violations[7] += 1
+    
+        if not (0 <= r <= 1):
+            penalty_check += 10000
+            constraint_violations[8] += 1
+    
+        if penalty_check > 0:
+            print("最终结果不符合所有约束条件，存在惩罚。")
+            print(f"总惩罚: {penalty_check}")
+            print("约束条件违反情况:")
+            for constraint, violations in constraint_violations.items():
+                if violations > 0:
+                    print(f"约束{constraint}被违反 {violations} 次")
+            print(f"\n特别注意: 约束4 (成年母牛数量下限) 被违反 {constraint_violations[4]} 次")
+        else:
+            print("最终结果符合所有约束条件。")
+    
+        return final_profit, constraint_violations
 
-    # 定义参数的边界
     bounds = [
         (0, 1),                     # r: 小母牛出售率
         (0, 1000000),               # M: 贷款投资
@@ -273,7 +335,6 @@ if __name__ == '__main__':
         (0, 200- (2/3*20+100))      # gamma: 种植甜菜
     ]
     
-    # 定义回调函数,用于输出优化过程
     def callback(xk, convergence):
         print(f"当前最优参数: {xk}")
         print(f"当前收敛度: {convergence}")
@@ -281,20 +342,18 @@ if __name__ == '__main__':
 
     print("开始优化过程...")
     
-    # 使用差分进化算法寻找最优参数
-    result = differential_evolution(objective_function, bounds, callback=callback, disp=True)
+    result = differential_evolution(objective_function, bounds, callback=callback, disp=True, popsize=20, maxiter=1000)
     
     print("\n优化完成!")
     print(f"最优参数: \n{result.x}")
     print(f"最大利润: \n{-result.fun}")
 
-    # 使用最优参数进行最终验证
     optimal_params = result.x
     r, M, alpha, beta1, beta2, beta3, beta4, gamma = optimal_params
 
     print("\n使用最优参数进行最终验证...")
 
-    cattle = Cattle(
+    cattle_opt = Cattle(
         x0=np.ones(12) * 10,
         birth_rates=np.array([0., 0., 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1]),
         survival_rates=np.array([0.95, 0.95, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98]),
@@ -306,11 +365,10 @@ if __name__ == '__main__':
         years=5
     )
 
-    # 验证最终结果
-    final_profit, _ = cattle.validate()
-    print(f"\n年度利润:\n{cattle.E_years_values}")
-    print(f"\nAlpha 值:\n{cattle.alpha_values}")
-    print(f"\nBeta 值:\n{cattle.betas_values}")
-    print(f"\nGamma 值:\n{cattle.gamma_values}")
-    print(f"\n使用最优参数的最终利润:\n{final_profit}")
+    final_profit, constraint_violations = validate_results(cattle_opt, optimal_params)
 
+    if constraint_violations[4] > 0:
+        print("\n约束4 (成年母牛数量下限) 不满足,详细信息:")
+        print(f"最后一年成年母牛数量: {np.sum(cattle_opt.xs[-1][2:])}")
+        print("要求的最小数量: 50")
+        print("建议: 可能需要调整参数以增加成年母牛数量,比如降低小母牛出售率或增加牧草面积。")
