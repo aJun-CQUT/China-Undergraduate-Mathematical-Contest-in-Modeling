@@ -71,45 +71,36 @@ class Cattle:
         self.E_years_values = np.array([0])
 
     def simulate(self):
-        # 模拟牧场运营
         total_penalty = 0
-        last_x = self.xs[-1].copy()  # 记录上一个状态
-    
+        
         for year in range(self.years + 1):
             x = self.xs[-1]
-    
+
             # 计算约束条件
             constraint1 = (self.M / 200 + 130) - np.sum(x)
             constraint2 = self.alpha - (2 / 3 * np.sum(x[:2]) + np.sum(x[2:]))
             constraint3 = 200 - np.sum([self.alpha, *self.betas, self.gamma])
             constraint4 = 50 - np.sum(x[2:])
             constraint5 = np.sum(x[2:]) - 175
-    
+
             # 计算惩罚项
             penalty1 = max(0, -constraint1) * 10
             penalty2 = max(0, -constraint2) * 10
             penalty3 = max(0, -constraint3) * 10
             penalty4 = max(0, -constraint4) * 10 if year == self.years - 1 else 0
             penalty5 = max(0, -constraint5) * 10 if year == self.years - 1 else 0
-    
+
             total_penalty += penalty1 + penalty2 + penalty3 + penalty4 + penalty5
             
+            # 调试信息
             print(f"Year {year}: Profit = {self.calculate_total_profit():>12.3f}, Total Penalty = {total_penalty:>12.3f}")
-    
+
             self.update_metrics(x)
-    
-            # 检查惩罚是否增加，如果增加则回退
-            if total_penalty > 0 and total_penalty > self.calculate_penalty(last_x):
-                self.xs[-1] = last_x.copy()  # 回退到上一个状态
-                print("Penalty increased, reverting to last state.")
-                break  # 结束模拟
-    
-            if year < self.years:
-                self.update_x()
-    
-            last_x = x.copy()  # 更新上一个状态
-    
+            self.update_x()
+
         profit = self.calculate_total_profit()
+
+        # 将总惩罚项从利润中扣除
         return profit - total_penalty, np.array(self.xs)
 
     def validate(self):
