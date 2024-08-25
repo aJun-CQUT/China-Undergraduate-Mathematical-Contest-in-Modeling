@@ -72,11 +72,11 @@ class Cattle:
 
     def calculate_penalty(self, x):
         # 计算给定状态的总惩罚
-        penalty1 = max(0, (self.M / 200 + 130) - np.sum(x)) * 10
-        penalty2 = max(0, self.alpha - (2 / 3 * np.sum(x[:2]) + np.sum(x[2:]))) * 10
-        penalty3 = max(0, 200 - np.sum([self.alpha, *self.betas, self.gamma])) * 10
-        penalty4 = max(0, 50 - np.sum(x[2:])) * 10
-        penalty5 = max(0, np.sum(x[2:]) - 175) * 10
+        penalty1 = min(0, (self.M / 200 + 130) - np.sum(x)) * 100                       # 满足约束 >=0 则取惩罚0
+        penalty2 = min(0, self.alpha - (2 / 3 * np.sum(x[:2]) + np.sum(x[2:]))) * 100   # 满足约束 >=0 则取惩罚0
+        penalty3 = min(0, 200 - np.sum([self.alpha, *self.betas, self.gamma])) * 100    # 满足约束 >=0 则取惩罚0
+        penalty4 = min(0, np.sum(x[2:]) - 50) * 100                                     # 满足约束 >=0 则取惩罚0
+        penalty5 = min(0, np.sum(x[2:]) - 175) * 100                                    # 满足约束 >=0 则取惩罚0
         
         return penalty1 + penalty2 + penalty3 + penalty4 + penalty5
 
@@ -89,18 +89,18 @@ class Cattle:
             x = self.xs[-1]
     
             # 计算约束条件
-            constraint1 = (self.M / 200 + 130) - np.sum(x)
-            constraint2 = self.alpha - (2 / 3 * np.sum(x[:2]) + np.sum(x[2:]))
-            constraint3 = 200 - np.sum([self.alpha, *self.betas, self.gamma])
-            constraint4 = 50 - np.sum(x[2:])
-            constraint5 = np.sum(x[2:]) - 175
+            constraint1 = (self.M / 200 + 130) - np.sum(x)                      # >= 0满足约束
+            constraint2 = self.alpha - (2 / 3 * np.sum(x[:2]) + np.sum(x[2:]))  # >= 0满足约束
+            constraint3 = 200 - np.sum([self.alpha, *self.betas, self.gamma])   # >= 0满足约束
+            constraint4 = np.sum(x[2:]) - 50                                    # >= 0满足约束
+            constraint5 = np.sum(x[2:]) - 175                                   # >= 0满足约束
     
             # 计算惩罚项
-            penalty1 = max(0, -constraint1) * 100
-            penalty2 = max(0, -constraint2) * 100
-            penalty3 = max(0, -constraint3) * 100
-            penalty4 = max(0, -constraint4) * 100 if year == self.years - 1 else 0
-            penalty5 = max(0, -constraint5) * 100 if year == self.years - 1 else 0
+            penalty1 = min(0, constraint1) * 100                                  # 满足约束 >=0 则取惩罚0
+            penalty2 = min(0, constraint2) * 100                                  # 满足约束 >=0 则取惩罚0
+            penalty3 = min(0, constraint3) * 100                                  # 满足约束 >=0 则取惩罚0
+            penalty4 = min(0, constraint4) * 100 if year == self.years - 1 else 0 # 满足约束 >=0 则取惩罚0
+            penalty5 = min(0, constraint5) * 100 if year == self.years - 1 else 0 # 满足约束 >=0 则取惩罚0
     
             total_penalty += penalty1 + penalty2 + penalty3 + penalty4 + penalty5
             
