@@ -85,7 +85,7 @@ class Cattle:
         total_penalty = 0
         last_x = self.xs[-1].copy()  # 记录上一个状态
     
-        for year in range(self.years + 1):
+        for year in range(self.years):
             x = self.xs[-1]
     
             # 计算约束条件
@@ -142,7 +142,7 @@ class Cattle:
 
     def validate(self):
         # 验证最优参数
-        for year in range(self.years + 1):
+        for year in range(self.years):
             x = self.xs[-1]
             self.update_metrics(x)
             if year < self.years:
@@ -253,7 +253,7 @@ if __name__ == '__main__':
             if not (constraint2 >= 0):
                 penalty += 10000
     
-            # 约束3：总面积上限
+            # 约束3：土地面积上限
             constraint3 = 200 - (alpha + beta1 + beta2 + beta3 + beta4 + gamma)
             if not (constraint3 >= 0):
                 penalty += 10000
@@ -287,7 +287,7 @@ if __name__ == '__main__':
     # 定义参数的边界
     bounds = [
         (0, 1),                     # r: 小母牛出售率
-        (0, 1000000),               # M:     贷款投资
+        (0, 1000000),               # M: 贷款投资
         (2/3*20+100, 200),          # alpha: 种植牧草
         (0, 20),                    # beta1: 种植粮食
         (0, 30),                    # beta2: 种植粮食
@@ -296,15 +296,26 @@ if __name__ == '__main__':
         (0, 200- (2/3*20+100))      # gamma: 种植甜菜
     ]
     
-    # 使用差分进化算法寻找最优参数
-    result = differential_evolution(objective_function, bounds)
+    # 定义回调函数,用于输出优化过程
+    def callback(xk, convergence):
+        print(f"当前最优参数: {xk}")
+        print(f"当前收敛度: {convergence}")
+        print("---")
+
+    print("开始优化过程...")
     
-    print(f"Optimal parameters: \n{result.x}")
-    print(f"Maximum profit: \n{-result.fun}")
+    # 使用差分进化算法寻找最优参数
+    result = differential_evolution(objective_function, bounds, callback=callback, disp=True)
+    
+    print("\n优化完成!")
+    print(f"最优参数: \n{result.x}")
+    print(f"最大利润: \n{-result.fun}")
 
     # 使用最优参数进行最终验证
     optimal_params = result.x
     r, M, alpha, beta1, beta2, beta3, beta4, gamma = optimal_params
+
+    print("\n使用最优参数进行最终验证...")
 
     cattle = Cattle(
         x0=np.ones(12) * 10,
@@ -320,8 +331,8 @@ if __name__ == '__main__':
 
     # 验证最终结果
     final_profit, _ = cattle.validate()
-    print(f"Yearly profits:\n{cattle.E_years_values}")
-    print(f"Alpha values:\n{cattle.alpha_values}")
-    print(f"Beta values:\n{cattle.betas_values}")
-    print(f"Gamma values:\n{cattle.gamma_values}")
-    print(f"Final profit with optimal parameters:\n{final_profit}")
+    print(f"\n年度利润:\n{cattle.E_years_values}")
+    print(f"\nAlpha 值:\n{cattle.alpha_values}")
+    print(f"\nBeta 值:\n{cattle.betas_values}")
+    print(f"\nGamma 值:\n{cattle.gamma_values}")
+    print(f"\n使用最优参数的最终利润:\n{final_profit}")

@@ -72,7 +72,7 @@ class Cattle:
 
     def simulate(self):
         # 模拟牧场运营
-        for year in range(self.years + 1):
+        for year in range(self.years):
             x = self.xs[-1]
             self.update_metrics(x)
             if year < self.years:
@@ -82,7 +82,7 @@ class Cattle:
     
     def validate(self):
         # 验证最优参数
-        for year in range(self.years + 1):
+        for year in range(self.years):
             x = self.xs[-1]
             self.update_metrics(x)
             if year < self.years:
@@ -119,35 +119,72 @@ class Cattle:
         num_damuniu_sales = np.floor(self.L_r @ x @ self.y_3_12).astype(int)
         num_laomuniu_sales = np.floor(self.L_r @ x @ self.y_12).astype(int)
     
-        self.num_xiaogongniu_sales_values = np.append(self.num_xiaogongniu_sales_values, num_xiaogongniu_sales)
-        self.num_xiaomuniu_sales_values = np.append(self.num_xiaomuniu_sales_values, num_xiaomuniu_sales)
-        self.num_damuniu_sales_values = np.append(self.num_damuniu_sales_values, num_damuniu_sales)
-        self.num_laomuniu_sales_values = np.append(self.num_laomuniu_sales_values, num_laomuniu_sales)
+        self.num_xiaogongniu_sales_values = np.append(
+            self.num_xiaogongniu_sales_values, num_xiaogongniu_sales)
+        self.num_xiaomuniu_sales_values = np.append(
+            self.num_xiaomuniu_sales_values, num_xiaomuniu_sales)
+        self.num_damuniu_sales_values = np.append(
+            self.num_damuniu_sales_values, num_damuniu_sales)
+        self.num_laomuniu_sales_values = np.append(
+            self.num_laomuniu_sales_values, num_laomuniu_sales)
     
-        self.w_xiaogongniu_values = np.append(self.w_xiaogongniu_values, 30 * num_xiaogongniu_sales)
-        self.w_xiaomuniu_values = np.append(self.w_xiaomuniu_values, 40 * num_laomuniu_sales)
-        self.w_damuniu_values = np.append(self.w_damuniu_values, 370 * num_damuniu_sales)
-        self.w_laomuniu_values = np.append(self.w_laomuniu_values, 120 * num_laomuniu_sales)
+        self.w_xiaogongniu_values = np.append(
+            self.w_xiaogongniu_values, 30 * num_xiaogongniu_sales)
+        self.w_xiaomuniu_values = np.append(
+            self.w_xiaomuniu_values, 40 * num_laomuniu_sales)
+        self.w_damuniu_values = np.append(
+            self.w_damuniu_values, 370 * num_damuniu_sales)
+        self.w_laomuniu_values = np.append(
+            self.w_laomuniu_values, 120 * num_laomuniu_sales)
     
-        self.t_xiaomunius_values = np.append(self.t_xiaomunius_values, 10 * x @ self.y_1_2)
-        self.t_damunius_values = np.append(self.t_damunius_values, 42 * x @ self.y_3_12)
-        self.t_betas_values = np.append(self.t_betas_values, 4 * (beta1 + beta2 + beta3 + beta4))
+        self.t_xiaomunius_values = np.append(
+            self.t_xiaomunius_values, 10 * x @ self.y_1_2)
+        self.t_damunius_values = np.append(
+            self.t_damunius_values, 42 * x @ self.y_3_12)
+        self.t_betas_values = np.append(
+            self.t_betas_values, 4 * (beta1 + beta2 + beta3 + beta4))
         self.t_gammas_values = np.append(self.t_gammas_values, 14 * gamma)
-        self.t_totals_values = np.append(self.t_totals_values, 10 * x @ self.y_1_2 + 42 * x @ self.y_3_12 + 4 * (beta1 + beta2 + beta3 + beta4) + 14 * gamma)
+        self.t_totals_values = np.append(
+            self.t_totals_values, 
+            10 * x @ self.y_1_2 + 42 * x @ self.y_3_12 + 
+            4 * (beta1 + beta2 + beta3 + beta4) + 14 * gamma
+        )
     
-        self.c_xiaomunius_values = np.append(self.c_xiaomunius_values, 500 * x @ self.y_1_2)
-        self.c_damunius_values = np.append(self.c_damunius_values, 100 * x @ self.y_3_12)
-        self.c_betas_values = np.append(self.c_betas_values, 15 * (beta1 + beta2 + beta3 + beta4))
+        self.c_xiaomunius_values = np.append(
+            self.c_xiaomunius_values, 500 * x @ self.y_1_2)
+        self.c_damunius_values = np.append(
+            self.c_damunius_values, 100 * x @ self.y_3_12)
+        self.c_betas_values = np.append(
+            self.c_betas_values, 15 * (beta1 + beta2 + beta3 + beta4))
         self.c_gammas_values = np.append(self.c_gammas_values, 10 * gamma)
-        self.c_workers_values = np.append(self.c_workers_values, 4000 if self.t_totals_values[-1] <= 5500 else 4000 + 1.2 * (self.t_totals_values[-1] - 5500))
+        self.c_workers_values = np.append(
+            self.c_workers_values, 
+            4000 if self.t_totals_values[-1] <= 5500 
+            else 4000 + 1.2 * (self.t_totals_values[-1] - 5500)
+        )
     
-        self.w_years_values = np.append(self.w_years_values, np.sum([self.w_xiaogongniu_values[-1], self.w_xiaomuniu_values[-1], self.w_damuniu_values[-1],
-                                                                     self.w_laomuniu_values[-1], self.w_betas_values[-1], self.w_gammas_values[-1]]))
+        self.w_years_values = np.append(
+            self.w_years_values, 
+            np.sum([
+                self.w_xiaogongniu_values[-1], self.w_xiaomuniu_values[-1], 
+                self.w_damuniu_values[-1], self.w_laomuniu_values[-1], 
+                self.w_betas_values[-1], self.w_gammas_values[-1]
+            ])
+        )
         
-        self.c_years_values = np.append(self.c_years_values, np.sum([self.c_betas_values[-1], self.c_gammas_values[-1], self.c_xiaomunius_values[-1],
-                                                                     self.c_damunius_values[-1], self.c_workers_values[-1], self.m]))
+        self.c_years_values = np.append(
+            self.c_years_values, 
+            np.sum([
+                self.c_betas_values[-1], self.c_gammas_values[-1], 
+                self.c_xiaomunius_values[-1], self.c_damunius_values[-1], 
+                self.c_workers_values[-1], self.m
+            ])
+        )
         
-        self.E_years_values = np.append(self.E_years_values, self.w_years_values[-1] - self.c_years_values[-1])
+        self.E_years_values = np.append(
+            self.E_years_values, 
+            self.w_years_values[-1] - self.c_years_values[-1]
+        )
 
     def update_x(self):
         # 更新种群分布
@@ -193,7 +230,7 @@ if __name__ == '__main__':
             if not (constraint2 >= 0):
                 penalty += 10000
     
-            # 约束3：总面积上限
+            # 约束3：土地面积上限
             constraint3 = 200 - (alpha + beta1 + beta2 + beta3 + beta4 + gamma)
             if not (constraint3 >= 0):
                 penalty += 10000
@@ -227,7 +264,7 @@ if __name__ == '__main__':
     # 定义参数的边界
     bounds = [
         (0, 1),                     # r: 小母牛出售率
-        (0, 1000000),               # M:     贷款投资
+        (0, 1000000),               # M: 贷款投资
         (2/3*20+100, 200),          # alpha: 种植牧草
         (0, 20),                    # beta1: 种植粮食
         (0, 30),                    # beta2: 种植粮食
@@ -236,15 +273,26 @@ if __name__ == '__main__':
         (0, 200- (2/3*20+100))      # gamma: 种植甜菜
     ]
     
-    # 使用差分进化算法寻找最优参数
-    result = differential_evolution(objective_function, bounds)
+    # 定义回调函数,用于输出优化过程
+    def callback(xk, convergence):
+        print(f"当前最优参数: {xk}")
+        print(f"当前收敛度: {convergence}")
+        print("---")
+
+    print("开始优化过程...")
     
-    print(f"Optimal parameters: \n{result.x}")
-    print(f"Maximum profit: \n{-result.fun}")
+    # 使用差分进化算法寻找最优参数
+    result = differential_evolution(objective_function, bounds, callback=callback, disp=True)
+    
+    print("\n优化完成!")
+    print(f"最优参数: \n{result.x}")
+    print(f"最大利润: \n{-result.fun}")
 
     # 使用最优参数进行最终验证
     optimal_params = result.x
     r, M, alpha, beta1, beta2, beta3, beta4, gamma = optimal_params
+
+    print("\n使用最优参数进行最终验证...")
 
     cattle = Cattle(
         x0=np.ones(12) * 10,
@@ -260,8 +308,9 @@ if __name__ == '__main__':
 
     # 验证最终结果
     final_profit, _ = cattle.validate()
-    print(f"Yearly profits:\n{cattle.E_years_values}")
-    print(f"Alpha values:\n{cattle.alpha_values}")
-    print(f"Beta values:\n{cattle.betas_values}")
-    print(f"Gamma values:\n{cattle.gamma_values}")
-    print(f"Final profit with optimal parameters:\n{final_profit}")
+    print(f"\n年度利润:\n{cattle.E_years_values}")
+    print(f"\nAlpha 值:\n{cattle.alpha_values}")
+    print(f"\nBeta 值:\n{cattle.betas_values}")
+    print(f"\nGamma 值:\n{cattle.gamma_values}")
+    print(f"\n使用最优参数的最终利润:\n{final_profit}")
+
