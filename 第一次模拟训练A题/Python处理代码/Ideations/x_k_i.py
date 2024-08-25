@@ -9,14 +9,14 @@ a = sp.Matrix([0, 0, 0.55, 0.55, 0.55, 0.55, 0.55, 0.55, 0.55, 0.55, 0.55, 0.55]
 # 存活率向量 b
 b = sp.Matrix([0.95, 0.95, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98]).T  # 转置为行向量
 
-# 定义符号变量 r,出售刚出生的小母牛的比例
+# 定义符号变量 r, 出售刚出生的小母牛的比例
 r = sp.symbols('r')
 
 # 构建莱斯利空矩阵 L
 n = len(x0)
 L = sp.zeros(n)
 
-# 考虑出售刚比率r刚出生的小母牛后，莱斯利矩阵 L 第一行赋值
+# 考虑出售刚比率 r 刚出生的小母牛后，莱斯利矩阵 L 第一行赋值
 L[0, :] = (1 - r) * a
 
 # 莱斯利矩阵 L 每个年龄段存活率赋值
@@ -32,13 +32,26 @@ def compute_population_distribution(x0, L, k):
         results.append(x.copy())  # 记录每年的种群分布
     return results
 
+# 计算每年的总种群数量
+def compute_total_population(distributions):
+    return [sum(dist) for dist in distributions]
+
 # 设定计算的时间步数 k
 k = 5
 
 # 计算每一年的种群数量分布向量
 population_distributions = compute_population_distribution(x0, L, k)
 
-# 输出结果
+# 计算总种群数量
+total_population = compute_total_population(population_distributions)
+
+# 输出每年的种群分布和总种群数量
+print("每年的种群分布：")
 for year, distribution in enumerate(population_distributions):
-    print(f"Year {year}:")
-    sp.pprint(distribution)
+    latex_distribution = sp.latex(distribution)
+    print(f"Year {year}: \\[ {latex_distribution} \\]")
+
+print("\n每年的总种群数量：")
+for year, total in enumerate(total_population):
+    latex_total = sp.latex(total.simplify())
+    print(f"Total population in Year {year}: \\[ {latex_total} \\]")
