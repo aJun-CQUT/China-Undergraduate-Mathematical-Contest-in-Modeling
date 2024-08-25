@@ -1,5 +1,5 @@
 import numpy as np
-
+from scipy.optimize import differential_evolution
 
 class Cattle:
     def __init__(self, x0, birth_rates, survival_rates, alpha, betas, gamma, r, M, years):
@@ -70,24 +70,13 @@ class Cattle:
         self.E_years_values = np.array([0])
 
     def simulate(self):
-        # 模拟牧场运营
-        for year in range(self.years + 1):
+        for year in range(self.years):
             x = self.xs[-1]
             self.update_metrics(x)
-            if year < self.years:
-                self.update_x()
+            self.update_x()
         
-        return self.calculate_total_profit(), np.array(self.xs)
-    
-    def validate(self):
-        # 验证最优参数
-        for year in range(self.years + 1):
-            x = self.xs[-1]
-            self.update_metrics(x)
-            if year < self.years:
-                self.update_x()
-        
-        return self.calculate_total_profit(), np.array(self.xs)
+        profit = self.calculate_total_profit()
+        return profit, np.array(self.xs)
 
     def update_metrics(self, x):
         # 更新所有指标
@@ -156,3 +145,116 @@ class Cattle:
     def calculate_total_profit(self):
         # 计算总利润
         return np.sum(self.E_years_values)
+
+def calculate_penalty(x, alpha, betas, gamma, r, M):
+    penalty = 0
+    
+    # 约束1
+    if not ((M / 200 + 130) - np.sum(x) >= 0):
+        penalty += 10000
+    
+    # 约束2
+    if not (alpha - (2 / 3 * np.sum(x[:2]) + np.sum(x[2:])) >= 0):
+        penalty += 10000
+    
+    # 约束3
+    if not (200 - np.sum([alpha, *betas, gamma]) >= 0):
+        penalty += 10000
+    
+    # 约束4
+    if not (np.sum(x[2:]) - 50 >= 0):
+        penalty += 10000
+    
+    # 约束5
+    if not (175 - np.sum(x[2:]) >= 0):
+        penalty += 10000
+    
+    # 约束6
+    if not (np.all(x >= 0) and np.all(x == np.floor(x))):
+        penalty += 10000
+    
+    # 约束7
+    if not all(v >= 0 for v in [alpha, *betas, gamma]):
+        penalty += 10000
+    
+    # 约束8
+    if not (0 <= r <= 1):
+        penalty += 10000
+    
+    return penalty
+
+def objective_function(params):
+    r, M, alpha, beta1, beta2, beta3, beta4, gamma = params
+
+    cattle = Cattle(
+        x0=np.ones(12) * 10,
+        birth_rates=np.array([0., 0., 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1]),
+        survival_rates=np.array([0.95, 0.95, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98]),
+        alpha=alpha,
+        betas=[beta1, beta2, beta3, beta4],
+        gamma=gamma,
+        r=r,
+        M=M,
+        years=5
+    )
+    
+    profit, xs = cattle.simulate()
+    
+    # 计算惩罚
+    penalty = calculate_penalty(xs[-1], alpha, [beta1, beta2, beta3, beta4], gamma, r, M)
+    
+    return -(profit - penalty)  # 返回负值,因为我们要最大化利润
+
+def main():
+    # 定义参数范围
+    bounds = [
+        (0, 1),                     # r: 小母牛出售率
+        (0, 1000000),               # M:     贷款投资
+        (2/3*20+100, 200),          # alpha: 种植牧草
+        (0, 20),                    # beta1: 种植粮食
+        (0, 30),                    # beta2: 种植粮食
+        (0, 30),                    # beta3: 种植粮食
+        (0, 10),                    # beta4: 种植粮食
+        (0, 200- (2/3*20+100))      # gamma: 种植甜菜
+    ]
+
+    # 使用差分进化算法寻找最优参数
+    result = differential_evolution(objective_function, bounds, maxiter=50, popsize=200, disp=True)
+
+    # 输出最优参数
+    r_opt, M_opt, alpha_opt, beta1_opt, beta2_opt, beta3_opt, beta4_opt, gamma_opt = result.x
+
+    print("最优参数:")
+    print(f"r (小母牛出售率): {r_opt:.4f}")
+    print(f"M (贷款投资): {M_opt:.2f}")
+    print(f"alpha (种植牧草面积): {alpha_opt:.2f}")
+    print(f"beta1 (种植粮食面积1): {beta1_opt:.2f}")
+    print(f"beta2 (种植粮食面积2): {beta2_opt:.2f}")
+    print(f"beta3 (种植粮食面积3): {beta3_opt:.2f}")
+    print(f"beta4 (种植粮食面积4): {beta4_opt:.2f}")
+    print(f"gamma (种植甜菜面积): {gamma_opt:.2f}")
+
+    # 使用最优参数再次运行模拟
+    cattle_opt = Cattle(
+        x0=np.ones(12) * 10,
+        birth_rates=np.array([0., 0., 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1]),
+        survival_rates=np.array([0.95, 0.95, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98, 0.98]),
+        alpha=alpha_opt,
+        betas=[beta1_opt, beta2_opt, beta3_opt, beta4_opt],
+        gamma=gamma_opt,
+        r=r_opt,
+        M=M_opt,
+        years=5
+    )
+
+    profit_opt, xs_opt = cattle_opt.simulate()
+
+    print(f"\n最优利润: {profit_opt:.2f}")
+
+    # 输出每年的种群分布
+    print("\n每年的种群分布:")
+    for year, x in enumerate(xs_opt):
+        print(f"年份 {year + 1}: {x}")
+
+if __name__ == "__main__":
+    main()
